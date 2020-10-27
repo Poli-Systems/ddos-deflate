@@ -584,7 +584,7 @@ ban_cloudflare()
     whitelist=$(ignore_list "1")
     
     if [ "$1" != "" ]; then
-        tcpdump -r "$CLOUDFLARE_PCAP" -n -A 2>/dev/null | \
+        tcpdump -e -nn -vv -r "$CLOUDFLARE_PCAP" 2>/dev/null | \
         # filter tcpdump data to the CF needed header
         grep "CF-Connecting-IP:" | \
         # Extract ip
