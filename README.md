@@ -52,7 +52,7 @@ The installation script has some support to automatically install the required d
 
 ## Ubuntu/Debian
 ```shell
-sudo apt install tcpdump netstat dsniff net-tools dnsutils grepcidr -y
+sudo apt install tcpdump netstat dsniff net-tools dnsutils grepcidr iftop -y
 ```
 ## Installation
 
