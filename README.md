@@ -9,6 +9,9 @@ with fixes, improvements and new features.
 
 **Contributor (BSD support):** Marc S. Brooks <devel@mbrooks.info>
 
+**Rewrite:** Poli <admin@polisystems.ch>
+
+(This version do not use ss because of the ipv6->ipv4 errors)
 ## About
 
 (D)DoS Deflate is a lightweight bash shell script designed to assist in
@@ -17,7 +20,7 @@ command below to create a list of IP addresses connected to the server,
 along with their total number of connections. It is one of the simplest
 and easiest to install solutions at the software level.
 
-ss -Hntu | awk '{print $6}' | sort | uniq -c | sort -nr
+netstat
 
 IP addresses with over a pre-configured number of connections are
 automatically blocked in the server's firewall, which can be direct
@@ -34,7 +37,7 @@ ipfw, iptables, or Advanced Policy Firewall (APF).
 * The script can run as a cron job at chosen frequency via the configuration file (default: 1 minute)
 * The script can run as a daemon at chosen frequency via the configuration file (default: 5 seconds)
 * You can receive email alerts when IP addresses are blocked.
-* Control blocking by connection state (see man ss or man nestat).
+* Control blocking by connection state ( man nestat).
 * Auto-detection of firewall.
 * Support for APF, CSF, ipfw, and iptables.
 * Logs events to /var/log/ddos.log
@@ -49,18 +52,14 @@ The installation script has some support to automatically install the required d
 
 ## Ubuntu/Debian
 ```shell
-sudo apt install dnsutils
-sudo apt-get install net-tools
-sudo apt-get install tcpdump
-sudo apt-get install dsniff -y
-sudo apt install grepcidr
+sudo apt install tcpdump netstat dsniff net-tools dnsutils grepcidr -y
 ```
 ## Installation
 
 As root user execute the following commands:
 
 ```shell
-wget https://github.com/jgmdev/ddos-deflate/archive/master.zip -O ddos.zip
+wget https://github.com/Poli-Systems/ddos-deflate/archive/master.zip -O ddos.zip
 unzip ddos.zip
 cd ddos-deflate-master
 ./install.sh
