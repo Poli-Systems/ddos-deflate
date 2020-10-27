@@ -154,6 +154,7 @@ ban_ip()
             $IPF -q add "$next_number" deny all from "$1" to any
             elif [ "$FIREWALL" = "iptables" ]; then
             $IPT -I INPUT -s "$1" -j DROP
+	    $IPT6 -I INPUT -s "$1" -j DROP
         fi
     else
         if [ "$FIREWALL" = "ipfw" ]; then
@@ -185,6 +186,7 @@ unban_ip()
             $IPF -q delete "$rule_number"
             elif [ "$FIREWALL" = "iptables" ]; then
             $IPT -D INPUT -s "$1" -j DROP
+	    $IPT6 -D INPUT -s "$1" -j DROP
         fi
     else
         if [ "$FIREWALL" = "ipfw" ]; then
@@ -231,13 +233,14 @@ unban_ip_list()
 # Bans a given ip using iptables or ip6tables for ipv6 connections.
 # TODO: implement rules for other firewalls, eg: freebsd
 # param1 The ip address to block
+#We added ipv6 and ipv4 to block ipv4-v6 spooffing
 ban_ip_cloudflare()
 {
-    if ! echo "$1" | grep ":">/dev/null; then
-        $IPT -I INPUT -m string --algo bm --string "CF-Connecting-IP: $1" -j DROP
-    else
-        $IPT6 -I INPUT -m string --algo bm --string "CF-Connecting-IP: $1" -j DROP
-    fi
+    if [ ! -z "$1" ] ; then
+
+	$IPT -I INPUT -m string --algo bm --string "CF-Connecting-IP: $1" -j DROP
+	$IPT6 -I INPUT -m string --algo bm --string "CF-Connecting-IP: $1" -j DROP
+   fi
 }
 
 # Unbans an ip using iptables or ip6tables for ipv6 connections.
@@ -249,10 +252,9 @@ unban_ip_cloudflare()
     if [ "$1" = "" ]; then
         return 1
     fi
-    
-    if ! echo "$1" | grep ":">/dev/null; then
+
+    if [ ! -z "$1" ]; then
         $IPT -D INPUT -m string --algo bm --string "CF-Connecting-IP: $1" -j DROP
-    else
         $IPT6 -D INPUT -m string --algo bm --string "CF-Connecting-IP: $1" -j DROP
     fi
     
@@ -340,7 +342,7 @@ get_connections()
         }'
         # Find listening services
     else
-        netstat -ntul"$1" | tail -n+3 | \
+        netstat -ntu"$1" | tail -n+3 | \
         # Add [] brackets and prepend dummy column to match ss output
         awk '{
                     if($1 == "tcp6" || $1 == "udp6") {
@@ -669,19 +671,19 @@ check_connections_cloudflare()
         current_time=$(date +"%s")
         echo "$((current_time+BAN_TOTAL)) ${CURR_LINE_IP} ${CURR_LINE_CONN}" >> \
         "${BANS_CLOUDFLARE_IP_LIST}"
-        
+
         ban_ip_cloudflare "$CURR_LINE_IP"
-        
+
         log_msg "banned ${CURR_LINE_IP} with $CURR_LINE_CONN connections for ban period $BAN_TOTAL"
     done < "$BAD_IP_LIST"
-    
+
     if [ "$IP_BAN_NOW" -eq 1 ]; then
         if [ -n "$EMAIL_TO" ]; then
             dt=$(date)
             hn=$(hostname)
             cat "$BANNED_IP_MAIL" | mail -s "[$hn] Cloudflare IP addresses banned on $dt" $EMAIL_TO
         fi
-        
+ 
         if [ "$KILL" -eq 1 ]; then
             echo "==========================================="
             echo "Banned CloudFlare IP addresses:"
@@ -1294,7 +1296,7 @@ daemon_loop()
     if $ENABLE_CLOUDFLARE; then
         # kill any previous opened tcpdump session.
         pkill -9 tcpdump
-        tcpdump -w "$CLOUDFLARE_PCAP" -G "$((DAEMON_FREQ+DAEMON_FREQ))" &
+        tcpdump -s500 -w "$CLOUDFLARE_PCAP" -G "$((DAEMON_FREQ+DAEMON_FREQ))" &
     fi
     
     if $ENABLE_PORTS; then
