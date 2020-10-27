@@ -600,7 +600,7 @@ ban_cloudflare()
         # Only store connections that exceed max allowed
         awk "{ if (\$1 >= $NO_OF_CONNECTIONS) print; }" > "$1"
     else
-        tcpdump -r "$CLOUDFLARE_PCAP" -n -A 2>/dev/null | \
+        tcpdump -e -nn -vv -r "$CLOUDFLARE_PCAP" 2>/dev/null | \
         # filter tcpdump data to the CF needed header
         grep "CF-Connecting-IP:" | \
         # Extract ip
