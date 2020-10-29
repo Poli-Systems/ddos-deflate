@@ -11,7 +11,6 @@ with fixes, improvements and new features.
 
 **Rewrite:** Poli <admin@polisystems.ch>
 
-(This version do not use ss because of the ipv6->ipv4 errors)
 ## About
 
 (D)DoS Deflate is a lightweight bash shell script designed to assist in
