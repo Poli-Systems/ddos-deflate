@@ -64,8 +64,9 @@ load_conf()
 
 ddos_head()
 {
-    echo "DDoS-Deflate version 1.3"
+    echo "DDoS-Deflate version 1.4"
     echo "Copyright (C) 2005, Zaf <zaf@vsnl.com>"
+    echo "Parial rewrite 2020, Poli <admin@polisystems.ch>"
     echo
 }
 
