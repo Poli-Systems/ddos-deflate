@@ -51,7 +51,7 @@ The installation script has some support to automatically install the required d
 
 ## Ubuntu/Debian
 ```shell
-sudo apt install tcpdump dsniff net-tools dnsutils grepcidr iftop -y
+sudo apt install tcpdump dsniff net-tools dnsutils grepcidr iftop zip unzip -y
 ```
 ## Installation
 
