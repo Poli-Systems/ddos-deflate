@@ -122,6 +122,51 @@ if [ -d /etc/newsyslog.conf.d ]; then
     echo " (done)"
 fi
 
+if [ -d /lib/systemd/system/apache2.service.d/apache2-systemd.conf ]; then
+    echo -n 'Adding apache2 configuration'
+    sed -i 's,LogFormat "%h %l %u %t \\"%r\\" %>s %O \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined,LogFormat "%a %l %u %t \\"%r\\" %>s %O \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined,g' /etc/apache2/apache2.conf 
+    for vhost in /etc/apache2/sites-available/*; do
+        if ! cat ${vhost} | grep -q 'ErrorLog ${APACHE_LOG_DIR}/error.log' ; then 
+            sed -i '/^<\/\VirtualHost>/i ErrorLog ${APACHE_LOG_DIR}/\error.log' ${vhost}
+        fi
+        echo "$vhost"
+        if ! cat ${vhost} | grep -q 'CustomLog ${APACHE_LOG_DIR}/access.log combined' ; then 
+            sed -i '/^<\/\VirtualHost>/i CustomLog ${APACHE_LOG_DIR}/access.log combined' ${vhost}
+        fi
+    done
+
+    a2enmod remoteip
+
+    echo '  RemoteIPHeader CF-Connecting-IP
+            RemoteIPTrustedProxy 173.245.48.0/20
+            RemoteIPTrustedProxy 103.21.244.0/22
+            RemoteIPTrustedProxy 103.22.200.0/22
+            RemoteIPTrustedProxy 103.31.4.0/22
+            RemoteIPTrustedProxy 141.101.64.0/18
+            RemoteIPTrustedProxy 108.162.192.0/18
+            RemoteIPTrustedProxy 190.93.240.0/20
+            RemoteIPTrustedProxy 188.114.96.0/20
+            RemoteIPTrustedProxy 197.234.240.0/22
+            RemoteIPTrustedProxy 198.41.128.0/17
+            RemoteIPTrustedProxy 162.158.0.0/15
+            RemoteIPTrustedProxy 104.16.0.0/12
+            RemoteIPTrustedProxy 172.64.0.0/13
+            RemoteIPTrustedProxy 131.0.72.0/22
+            RemoteIPTrustedProxy 2400:cb00::/32
+            RemoteIPTrustedProxy 2606:4700::/32
+            RemoteIPTrustedProxy 2803:f800::/32
+            RemoteIPTrustedProxy 2405:b500::/32
+            RemoteIPTrustedProxy 2405:8100::/32
+            RemoteIPTrustedProxy 2a06:98c0::/29
+            RemoteIPTrustedProxy 2c0f:f248::/32' > /etc/apache2/conf-available/remoteip.conf
+            
+    a2enconf remoteip
+
+    if pgrep -x apache2 >/dev/null ; then 
+        service apache2 restart
+    fi
+fi
+
 echo;
 
 if [ -d /lib/systemd/system ]; then
